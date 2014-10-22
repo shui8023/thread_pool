@@ -27,14 +27,38 @@ using namespace std;
 
 class thread_pool{
 	public:
-	
+		typedef void *(*task)(void *);
+		struct task_list{
+			task task_fun;
+			void *arg;
+			struct task_list *next;
+		};
+		struct pthread_info{
+			task_list *begin;
+			task_list *end;
+			int pthread_count;
+			int max;
+			int current_count;
+			bool quit;
+		};
+		struct cont{
+			pthread_mutex_t mutex;  //使用互斥锁
+			pthread_cond_t cond; 	//条件变量
+		};
 	public:
 		thread_pool();
 		~thread_pool();
+		void init_cond();
+		void init_pthread(const int &);
+		void destroy_cond();
+		void *run_pthread();
+		void add_task(task run_task, void *arg);
 	private:
+		cont cond_info;
+		pthread_info pthread_info;
+		vector<int> pids;
 		thread_pool(const thread_pool &);
 		thread_pool & operator=(const thread_pool &);	
-		int thread_count;
 };
 
 #endif //THREAD_POOL
